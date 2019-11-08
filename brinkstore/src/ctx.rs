@@ -7,7 +7,6 @@ use std::hash::Hasher;
 use std::collections::hash_map::DefaultHasher;
 
 pub struct BrinkStoreContext {
-    hasher: DefaultHasher,
     stores: HashMap<String, BrinkStore>,
     blocks: HashMap<i32, BrinkBlock>,
     default_block: Option<i32>,
@@ -16,7 +15,6 @@ pub struct BrinkStoreContext {
 impl BrinkStoreContext {
     pub fn new() -> BrinkStoreContext {
         BrinkStoreContext {
-            hasher: DefaultHasher::new(),
             stores: HashMap::new(),
             blocks: HashMap::new(),
             default_block: None,
@@ -38,10 +36,6 @@ impl BrinkStoreContext {
             Some(data) => Ok(Some(data)),
             None => Ok(None)
         }
-    }
-
-    pub fn hasher(&self) -> &DefaultHasher {
-        &self.hasher
     }
 
     pub fn add_store(&mut self, store: BrinkStore) {

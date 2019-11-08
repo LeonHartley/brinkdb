@@ -7,9 +7,11 @@ use std::borrow::BorrowMut;
 use std::collections::hash_map::DefaultHasher;
 use crypto::sha1::Sha1;
 use crypto::digest::Digest;
+use crate::store::index::{BrinkIndexStore, BrinkIndex};
 
 pub mod block;
 pub mod loader;
+pub mod index;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkDataKey {
@@ -21,6 +23,7 @@ pub struct BrinkDataKey {
 pub struct BrinkStore {
     pub name: String,
     pub keys: HashMap<String, BrinkDataKey>,
+    pub indexes: BrinkIndexStore,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -64,6 +67,14 @@ impl BrinkStore {
         let bytes = bincode::serialize(&data).unwrap();
         let length = bytes.len();
         let index = block.write_value(bytes).await?;
+
+        // index it if possible
+        if let Some(c) = data.blob.first() {
+            if *c == b'{' {
+                println!("its json");
+                let _ = BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), &mut self.indexes);
+            }
+        }
 
         entry.put(BrinkDataRef {
             store_id: 1,

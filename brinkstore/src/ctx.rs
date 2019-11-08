@@ -1,5 +1,5 @@
 use std::collections::{HashMap, LinkedList};
-use crate::store::BrinkStore;
+use crate::store::{BrinkStore, BrinkData};
 use crate::store::block::BrinkBlock;
 use std::sync::{RwLock, Arc};
 use tokio::io::Error;
@@ -25,18 +25,21 @@ impl BrinkStoreContext {
         }
     }
 
-    pub async fn put(&mut self, store: String, key: String, value: String) -> Result<(), Error> {
+    pub async fn put(&mut self, store: String, key: String, value: Vec<u8>) -> Result<(), Error> {
         let mut store = self.stores.get_mut(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         store.put(key, value, &mut default_block).await
     }
 
-    pub async fn get(&mut self, store: String, key: String) -> Result<Option<String>, Error> {
+    pub async fn get(&mut self, store: String, key: String) -> Result<Option<BrinkData>, Error> {
         let mut store = self.stores.get_mut(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
-        store.get(key).await
+        match store.get(key, &mut default_block).await? {
+            Some(data) => Ok(Some(data)),
+            None => Ok(None)
+        }
     }
 
     pub fn hasher(&self) -> &DefaultHasher {

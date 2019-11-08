@@ -38,7 +38,7 @@ pub struct BrinkData {
 }
 
 impl BrinkStore {
-    pub async fn put(&mut self, key: String, value: String, block: &mut BrinkBlock) -> Result<(), Error> {
+    pub async fn put(&mut self, key: String, value: Vec<u8>, block: &mut BrinkBlock) -> Result<(), Error> {
         let mut data = BrinkData::new(key.clone(), 1, value);
         let mut entry = match self.keys.get_mut(&key) {
             Some(mut e) => e,
@@ -69,17 +69,24 @@ impl BrinkStore {
         Ok(())
     }
 
-    pub async fn get(&mut self, key: String) -> Result<Option<String>, Error> {
-        Ok(Some("".to_string()))
+    pub async fn get(&mut self, key: String, block: &mut BrinkBlock) -> Result<Option<BrinkData>, Error> {
+        let version = match self.keys.get_mut(&key) {
+            Some(e) => match e.latest_version() {
+                Some(v) => v,
+                None => return Ok(None)
+            },
+            None => return Ok(None)
+        };
+
+        let res = block.read(version.index, version.length as u64).await?;
+        let x = bincode::deserialize(&res[..]).unwrap();
+        println!("{:?}", x);
+        Ok(Some(x))
     }
 }
 
 impl BrinkData {
-    pub fn new(key: String, version: i32, blob: String) -> BrinkData {
-        let blob = blob
-            .as_bytes()
-            .to_vec();
-
+    pub fn new(key: String, version: i32, blob: Vec<u8>) -> BrinkData {
         BrinkData { key, version, blob }
     }
 }

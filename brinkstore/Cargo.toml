@@ -1,0 +1,12 @@
+[package]
+name = "brinkstore"
+version = "0.1.0"
+authors = ["Leon Hartley <leon.hartley@degree53.com>"]
+edition = "2018"
+
+[dependencies]
+bincode = "1.2.0"
+tokio = "0.2.0-alpha.6"
+serde = { version = "1.0", features = ["derive"] }
+uuid = "0.8"
+async-trait = "0.1.17"

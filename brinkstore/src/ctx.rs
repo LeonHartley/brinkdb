@@ -6,8 +6,6 @@ use tokio::io::Error;
 use std::hash::Hasher;
 use std::collections::hash_map::DefaultHasher;
 
-pub type BrinkContext = Arc<RwLock<BrinkStoreContext>>;
-
 pub struct BrinkStoreContext {
     hasher: DefaultHasher,
     stores: HashMap<String, BrinkStore>,

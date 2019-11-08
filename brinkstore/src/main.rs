@@ -38,9 +38,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     ctx.add_block(block);
     ctx.set_default_block(1);
 
-    ctx.put(store_name.clone(), "key-1".to_string(), "this is a value alalala".as_bytes().to_vec()).await?;
+    ctx.put(store_name.clone(), "key-1".to_string(), "updated value".as_bytes().to_vec()).await?;
 
-    println!("{:?}", ctx.get(store_name.clone(), "key-1".to_string()).await?);
+    let data = match ctx.get(store_name.clone(), "key-1".to_string()).await? {
+        Some(data) => data,
+        None => panic!("no key found")
+    };
+
+    println!("version: {}, value: {}", data.version, String::from_utf8(data.blob).unwrap());
     let store = ctx.get_store_mut(&store_name).unwrap();
     BrinkStoreLoader::write(store).await?;
 

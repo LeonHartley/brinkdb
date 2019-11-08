@@ -5,7 +5,6 @@ use tokio::io::Error;
 use crate::store::block::BrinkBlock;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::DefaultHasher;
-use std::hash::Hash;
 use crypto::sha1::Sha1;
 use crypto::digest::Digest;
 
@@ -66,13 +65,9 @@ impl BrinkStore {
 
         let bytes = bincode::serialize(&data).unwrap();
         let length = bytes.len();
-        let mut hasher = Sha1::new();
-        hasher.input(&bytes);
-        let hash = hasher.result_str();
-
         let index = block.write_value(bytes).await?;
 
-        entry.versions.push_front(BrinkDataRef {
+        entry.put(BrinkDataRef {
             store_id: 1,
             version: data.version,
             index,

@@ -25,11 +25,18 @@ impl BrinkStoreContext {
         }
     }
 
-    pub async fn put_key(&mut self, store: String, key: String, value: String) -> Result<(), Error> {
+    pub async fn put(&mut self, store: String, key: String, value: String) -> Result<(), Error> {
         let mut store = self.stores.get_mut(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
-        store.put_key(key, value, &mut default_block).await
+        store.put(key, value, &mut default_block).await
+    }
+
+    pub async fn get(&mut self, store: String, key: String) -> Result<Option<String>, Error> {
+        let mut store = self.stores.get_mut(&store).unwrap();
+        let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
+
+        store.get(key).await
     }
 
     pub fn hasher(&self) -> &DefaultHasher {

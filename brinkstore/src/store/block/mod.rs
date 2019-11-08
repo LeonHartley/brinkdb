@@ -1,28 +1,41 @@
-use tokio::fs::File;
+use tokio::fs::{File, OpenOptions};
 use tokio::io::{Error, AsyncWriteExt};
+use tokio::sync::Mutex;
 
-pub struct BrinkBlock {
-    pub id: i32,
-    pub file: File,
+pub struct BrinkBlockFile {
+    pub inner: File,
     pub writer_index: i32,
     pub cache: BrinkBlockCache,
 }
 
+pub struct BrinkBlock {
+    pub id: i32,
+    pub file: Mutex<BrinkBlockFile>,
+}
+
 impl BrinkBlock {
-    pub fn new(id: i32, file: File) -> BrinkBlock {
-        BrinkBlock {
+    pub async fn new(id: i32) -> Result<BrinkBlock, Error> {
+        let inner = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .read(true)
+            .open(format!("block-{}.brinkdb", id)).await?;
+
+        let writer_index = inner.metadata().await?.len() as i32;
+        let cache = BrinkBlockCache::new();
+
+        Ok(BrinkBlock {
             id,
-            file,
-            writer_index: 0,
-            cache: BrinkBlockCache::new(),
-        }
+            file: Mutex::new(BrinkBlockFile { inner, writer_index, cache }),
+        })
     }
 
     pub async fn write_value(&mut self, data: Vec<u8>) -> Result<i32, Error> {
-        let index = self.writer_index;
+        let mut file = self.file.lock().await;
+        let index = file.writer_index;
 
-        self.file.write(data.as_slice()).await?;
-        self.writer_index += data.len() as i32;
+        file.inner.write(data.as_slice()).await?;
+        file.writer_index += data.len() as i32;
 
         Ok(index)
     }

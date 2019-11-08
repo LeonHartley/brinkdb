@@ -26,7 +26,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let store_name = "brinkdb".to_string();
     let mut ctx = BrinkStoreContext::new();
     let mut block = BrinkBlock::new(1).await?;
-    ctx.add_store(BrinkStoreLoader::read(store_name.clone()).await?);
+
+    ctx.add_store(match BrinkStoreLoader::read(store_name.clone()).await {
+        Result::Ok(store) => store,
+        Result::Err(_) => BrinkStore {
+            name: "brinkdb".to_string(),
+            keys: HashMap::new(),
+        }
+    });
 
     ctx.add_block(block);
     ctx.set_default_block(1);

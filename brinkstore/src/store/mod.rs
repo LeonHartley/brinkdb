@@ -6,6 +6,8 @@ use crate::store::block::BrinkBlock;
 use std::borrow::BorrowMut;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
+use crypto::sha1::Sha1;
+use crypto::digest::Digest;
 
 pub mod block;
 pub mod loader;
@@ -39,24 +41,35 @@ pub struct BrinkData {
 
 impl BrinkStore {
     pub async fn put(&mut self, key: String, value: Vec<u8>, block: &mut BrinkBlock) -> Result<(), Error> {
+        if let Some(data) = self.get(key.clone(), block).await? {
+            if data.blob == value {
+                return Ok(());
+            }
+        }
+
         let mut data = BrinkData::new(key.clone(), 1, value);
         let mut entry = match self.keys.get_mut(&key) {
             Some(mut e) => e,
             None => {
                 let data_key = BrinkDataKey::new(key.clone());
-
                 self.keys.insert(key.clone(), data_key);
                 self.keys.get_mut(&key).unwrap()
             }
         };
 
         data.version = match entry.latest_version() {
-            Some(latest) => latest.version + 1,
+            Some(latest) => {
+                data.version + 1
+            }
             None => data.version
         };
 
         let bytes = bincode::serialize(&data).unwrap();
         let length = bytes.len();
+        let mut hasher = Sha1::new();
+        hasher.input(&bytes);
+        let hash = hasher.result_str();
+
         let index = block.write_value(bytes).await?;
 
         entry.versions.push_front(BrinkDataRef {
@@ -80,7 +93,6 @@ impl BrinkStore {
 
         let res = block.read(version.index, version.length as u64).await?;
         let x = bincode::deserialize(&res[..]).unwrap();
-        println!("{:?}", x);
         Ok(Some(x))
     }
 }

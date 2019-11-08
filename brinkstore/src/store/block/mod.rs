@@ -35,7 +35,6 @@ impl BrinkBlock {
         let mut file = self.file.lock().await;
         let index = file.writer_index;
 
-        println!("writing at {}", index);
         file.inner.write(data.as_slice()).await?;
         file.writer_index += data.len() as i32 - 1;
 
@@ -43,18 +42,15 @@ impl BrinkBlock {
     }
 
     pub async fn read(&mut self, position: i32, length: u64) -> Result<Vec<u8>, Error> {
-        println!("reading at {}, length: {}", position, length);
         let mut file = self.file.lock().await;
         file.inner.seek(SeekFrom::Start(position as u64)).await?;
 
         let mut contents = vec![0u8; length as usize];
         file.inner.read_exact(&mut contents).await?;
 
-        println!("{:?}", contents);
         Ok(contents)
     }
 }
-
 
 pub struct BrinkBlockCache {
     pub position: i32,

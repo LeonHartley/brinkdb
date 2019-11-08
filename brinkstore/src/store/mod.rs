@@ -4,6 +4,8 @@ use tokio::fs::{read, write};
 use tokio::io::Error;
 use crate::store::block::BrinkBlock;
 use std::borrow::BorrowMut;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
 
 pub mod block;
 pub mod loader;
@@ -42,12 +44,17 @@ impl BrinkStore {
             Some(mut e) => e,
             None => {
                 let data_key = BrinkDataKey::new(key.clone());
+
                 self.keys.insert(key.clone(), data_key);
                 self.keys.get_mut(&key).unwrap()
             }
         };
 
-        data.version = entry.latest_version() + 1;
+        data.version = match entry.latest_version() {
+            Some(latest) => latest.version + 1,
+            None => 0
+        };
+
         let bytes = bincode::serialize(&data).unwrap();
         let length = bytes.len();
         let index = block.write_value(bytes).await?;
@@ -83,10 +90,7 @@ impl BrinkDataKey {
         self.versions.push_front(data_ref);
     }
 
-    pub fn latest_version(&self) -> i32 {
-        match self.versions.front() {
-            Some(v) => v.version,
-            None => 0
-        }
+    pub fn latest_version(&self) -> Option<&BrinkDataRef> {
+        self.versions.front()
     }
 }

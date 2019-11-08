@@ -3,10 +3,13 @@ use crate::store::BrinkStore;
 use crate::store::block::BrinkBlock;
 use std::sync::{RwLock, Arc};
 use tokio::io::Error;
+use std::hash::Hasher;
+use std::collections::hash_map::DefaultHasher;
 
 pub type BrinkContext = Arc<RwLock<BrinkStoreContext>>;
 
 pub struct BrinkStoreContext {
+    hasher: DefaultHasher,
     stores: HashMap<String, BrinkStore>,
     blocks: HashMap<i32, BrinkBlock>,
     default_block: Option<i32>,
@@ -15,6 +18,7 @@ pub struct BrinkStoreContext {
 impl BrinkStoreContext {
     pub fn new() -> BrinkStoreContext {
         BrinkStoreContext {
+            hasher: DefaultHasher::new(),
             stores: HashMap::new(),
             blocks: HashMap::new(),
             default_block: None,
@@ -26,6 +30,10 @@ impl BrinkStoreContext {
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         store.put_key(key, value, &mut default_block).await
+    }
+
+    pub fn hasher(&self) -> &DefaultHasher {
+        &self.hasher
     }
 
     pub fn add_store(&mut self, store: BrinkStore) {

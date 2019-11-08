@@ -1,7 +1,0 @@
-[package]
-name = "brinkdb"
-version = "0.1.0"
-authors = ["Leon Hartley <leon.hartley@degree53.com>"]
-edition = "2018"
-
-[dependencies]

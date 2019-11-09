@@ -8,10 +8,13 @@ use std::collections::hash_map::DefaultHasher;
 use crypto::sha1::Sha1;
 use crypto::digest::Digest;
 use crate::store::index::{BrinkIndexStore, BrinkIndex};
+use crate::store::util::IsJson;
+use crate::store::index::parser::BrinkIndexParser;
 
 pub mod block;
 pub mod loader;
 pub mod index;
+pub mod util;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkDataKey {
@@ -68,12 +71,8 @@ impl BrinkStore {
         let length = bytes.len();
         let index = block.write_value(bytes).await?;
 
-        // index it if possible
-        if let Some(c) = data.blob.first() {
-            if *c == b'{' {
-                println!("its json");
-                let _ = BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), &mut self.indexes);
-            }
+        if data.blob.is_json() {
+            BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), &mut self.indexes);
         }
 
         entry.put(BrinkDataRef {

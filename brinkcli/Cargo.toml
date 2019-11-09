@@ -1,0 +1,12 @@
+[package]
+name = "brinkcli"
+version = "0.1.0"
+authors = ["Leon Hartley <leon.hartley@degree53.com>"]
+edition = "2018"
+
+[dependencies]
+tokio = "0.2.0-alpha.6"
+clap = "2.33.0"
+serde_json = "1.0"
+
+brinkstore = { path = "../brinkstore"}

@@ -1,4 +1,6 @@
 [workspace]
 members = [
-    "brinkstore"
+    "brinkstore",
+    "brinkserver",
+    "brinkcli"
 ]

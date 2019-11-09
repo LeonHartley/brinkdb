@@ -5,6 +5,7 @@ use std::sync::{RwLock, Arc};
 use tokio::io::Error;
 use std::hash::Hasher;
 use std::collections::hash_map::DefaultHasher;
+use std::time::Instant;
 
 pub struct BrinkStoreContext {
     stores: HashMap<String, BrinkStore>,
@@ -22,20 +23,30 @@ impl BrinkStoreContext {
     }
 
     pub async fn put(&mut self, store: String, key: String, value: Vec<u8>) -> Result<(), Error> {
+        let watch = Instant::now();
+
         let mut store = self.stores.get_mut(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
-        store.put(key, value, &mut default_block).await
+        let res = store.put(key, value, &mut default_block).await;
+        println!("set value took {} ms", watch.elapsed().as_millis());
+
+        res
     }
 
     pub async fn get(&mut self, store: String, key: String) -> Result<Option<BrinkData>, Error> {
-        let mut store = self.stores.get_mut(&store).unwrap();
+        let watch = Instant::now();
+
+        let store = self.stores.get(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
-        match store.get(key, &mut default_block).await? {
+        let result = match store.get(key, &mut default_block).await? {
             Some(data) => Ok(Some(data)),
             None => Ok(None)
-        }
+        };
+
+        println!("get value took {} ms", watch.elapsed().as_millis());
+        result
     }
 
     pub fn add_store(&mut self, store: BrinkStore) {
@@ -46,7 +57,7 @@ impl BrinkStoreContext {
         self.stores.get_mut(store)
     }
 
-    pub fn get_store(&mut self, store: &String) -> Option<&BrinkStore> {
+    pub fn get_store(&self, store: &String) -> Option<&BrinkStore> {
         self.stores.get(store)
     }
 

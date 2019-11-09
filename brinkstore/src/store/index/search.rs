@@ -1,4 +1,6 @@
 use crate::store::index::{BrinkIndexStore, BrinkIndexValue};
+use std::time::Instant;
+use std::error::Error;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkIndexSearchKey {
@@ -29,7 +31,8 @@ impl BrinkIndexSearch {
     }
 
     pub fn search(&self, store: &BrinkIndexStore) -> BrinkIndexSearchResult {
-        let values: Vec<Vec<BrinkIndexValue>> = self.keys.iter()
+        let watch = Instant::now();
+        let values: Vec<BrinkIndexValue> = self.keys.iter()
             .filter_map(|key| {
                 let index = store.values.get(&key.key);
                 if let Some(index) = index {
@@ -42,9 +45,10 @@ impl BrinkIndexSearch {
                     None
                 }
             })
+            .flat_map(|m| m)
             .collect();
 
-        println!("{:?}", values);
+        println!("search {:?}, taken {} ms", values, watch.elapsed().as_millis());
         BrinkIndexSearchResult::None
     }
 }

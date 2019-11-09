@@ -85,8 +85,8 @@ impl BrinkStore {
         Ok(())
     }
 
-    pub async fn get(&mut self, key: String, block: &mut BrinkBlock) -> Result<Option<BrinkData>, Error> {
-        let version = match self.keys.get_mut(&key) {
+    pub async fn get(&self, key: String, block: &mut BrinkBlock) -> Result<Option<BrinkData>, Error> {
+        let version = match self.keys.get(&key) {
             Some(e) => match e.latest_version() {
                 Some(v) => v,
                 None => return Ok(None)

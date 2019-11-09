@@ -57,7 +57,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .help("the value to set")
                     .takes_value(true)
                     .required(true)
-                    .raw(true)
                     .multiple(true)
             ]))
         .subcommand(App::new("metadata")

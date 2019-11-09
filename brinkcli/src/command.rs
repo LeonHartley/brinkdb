@@ -35,13 +35,13 @@ pub async fn handle_get(store: String, key: String, ctx: &mut BrinkStoreContext)
             let value = ctx.get(store, key.clone()).await?.unwrap();
             let s = &String::from_utf8(value.blob.clone()).unwrap();
             if value.blob.is_json() {
-                if let Ok(value) = serde_json::from_str::<Value>(s) {
-                    serde_json::to_string_pretty(&value).unwrap()
+                if let Ok(v) = serde_json::from_str::<Value>(s) {
+                    format!("{} v{}\n{}", &key, value.version, serde_json::to_string_pretty(&v).unwrap())
                 } else {
-                    format!("{}", s)
+                    format!("{} v{}\n{}", &key, value.version, s)
                 }
             } else {
-                format!("{}", s)
+                format!("{} v{}\n{}", &key, value.version, s)
             }
         }
     };
@@ -51,7 +51,6 @@ pub async fn handle_get(store: String, key: String, ctx: &mut BrinkStoreContext)
 }
 
 pub async fn handle_set(store: String, key: String, value: String, ctx: &mut BrinkStoreContext) -> Result<(), Box<dyn Error>> {
-    println!("setting value: {}", value);
     ctx.put(store, key, value.as_bytes().to_vec()).await?;
 
     Ok(())

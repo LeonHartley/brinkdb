@@ -63,7 +63,7 @@ impl BrinkStore {
         };
 
         data.version = match entry.latest_version() {
-            Some(latest) => data.version + 1,
+            Some(latest) => latest.version + 1,
             None => data.version
         };
 

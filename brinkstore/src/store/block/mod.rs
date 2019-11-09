@@ -46,7 +46,7 @@ impl BrinkBlock {
     pub async fn read(&mut self, position: i32, length: u64) -> Result<Vec<u8>, Error> {
         let mut file = self.file.lock().await;
 
-        println!("current writer index, {}, reading from {} to {}", file.writer_index, position, length);
+//        println!("current writer index, {}, reading from {} to {}", file.writer_index, position, length);
 
         // TODO: use block cache
         file.inner.seek(SeekFrom::Start(position as u64)).await?;

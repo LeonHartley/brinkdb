@@ -48,7 +48,7 @@ impl BrinkIndexSearch {
             .flat_map(|m| m)
             .collect();
 
-        println!("search {:?}, taken {} ms", values, watch.elapsed().as_millis());
+//        println!("search {:?}, taken {} ms", values, watch.elapsed().as_millis());
         BrinkIndexSearchResult::None
     }
 }

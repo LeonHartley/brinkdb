@@ -64,7 +64,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .about("Gets metadata for chosen store"))
         .get_matches();
 
-    println!("{:?}", args);
+//    println!("{:?}", args);
     let store_name: String = args.value_of("store").unwrap().into();
     let (subcommand, subcmd_args) = args.subcommand();
     let args = subcmd_args.unwrap();

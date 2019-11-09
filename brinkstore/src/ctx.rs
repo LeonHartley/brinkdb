@@ -29,7 +29,7 @@ impl BrinkStoreContext {
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         let res = store.put(key, value, &mut default_block).await;
-        println!("set value took {} ms", watch.elapsed().as_millis());
+//        println!("set value took {} ms", watch.elapsed().as_millis());
 
         res
     }
@@ -45,7 +45,7 @@ impl BrinkStoreContext {
             None => Ok(None)
         };
 
-        println!("get value took {} ms", watch.elapsed().as_millis());
+//        println!("get value took {} ms", watch.elapsed().as_millis());
         result
     }
 

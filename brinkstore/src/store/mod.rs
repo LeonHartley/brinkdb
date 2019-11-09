@@ -10,6 +10,7 @@ use crypto::digest::Digest;
 use crate::store::index::{BrinkIndexStore, BrinkIndex};
 use crate::store::util::IsJson;
 use crate::store::index::parser::BrinkIndexParser;
+use chrono::prelude::*;
 
 pub mod block;
 pub mod loader;
@@ -29,12 +30,20 @@ pub struct BrinkStore {
     pub indexes: BrinkIndexStore,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub enum BrinkDataState {
+    Created,
+    Updated,
+    Deleted,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BrinkDataRef {
-    pub store_id: i32,
     pub version: i32,
     pub index: i32,
     pub length: usize,
+    pub state: BrinkDataState,
+    pub timestamp: i64,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -75,11 +84,19 @@ impl BrinkStore {
             BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), &mut self.indexes);
         }
 
+        let state = if data.version == 1 {
+            BrinkDataState::Created
+        } else {
+            BrinkDataState::Updated
+        };
+
+        let timestamp = Utc::now().timestamp();
         entry.put(BrinkDataRef {
-            store_id: 1,
             version: data.version,
+            state,
             index,
             length,
+            timestamp,
         });
 
         Ok(())
@@ -94,9 +111,32 @@ impl BrinkStore {
             None => return Ok(None)
         };
 
+        if version.state != BrinkDataState::Active {
+            return Ok(None);
+        }
+
         let res = block.read(version.index, version.length as u64).await?;
         let x = bincode::deserialize(&res[..]).unwrap();
+
         Ok(Some(x))
+    }
+
+    pub async fn del(&mut self, key: String) -> Result<(), Error> {
+        if let Some(entry) = self.keys.get_mut(&key) {
+            if let Some(latest) = entry.latest_version() {
+                if latest.state == BrinkDataState::Deleted {
+                    return Ok(());
+                }
+
+                let mut new = latest.clone();
+                new.state = BrinkDataState::Deleted;
+                new.version = new.version + 1;
+
+                entry.put(new);
+            }
+        }
+
+        Ok(())
     }
 }
 

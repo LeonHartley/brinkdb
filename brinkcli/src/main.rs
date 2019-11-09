@@ -46,6 +46,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .index(1)
                     .required(true),
             ))
+        .subcommand(App::new("del")
+            .about("Delete a value by key")
+            .arg(
+                Arg::with_name("key")
+                    .help("the key to delete")
+                    .index(1)
+                    .required(true),
+            ))
         .subcommand(App::new("set")
             .about("Sets a value by key")
             .args(&[
@@ -77,6 +85,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             Command::Set(args.value_of("key").unwrap().into(), values.join(" "))
         }
         "get" => Command::Get(args.value_of("key").unwrap().into()),
+        "del" => Command::Delete(args.value_of("key").unwrap().into()),
         "metadata" => Command::Metadata,
         _ => Command::Unknown
     };

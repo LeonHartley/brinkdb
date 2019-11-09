@@ -3,6 +3,8 @@ use tokio::io::{Error, AsyncWriteExt, AsyncReadExt, BufReader};
 use tokio::sync::Mutex;
 use std::io::SeekFrom;
 
+const BLOCK_CACHE_SIZE: u64 = 128_000_000;
+
 pub struct BrinkBlockFile {
     pub inner: File,
     pub writer_index: i32,
@@ -38,7 +40,7 @@ impl BrinkBlock {
         file.inner.write(data.as_slice()).await?;
         file.writer_index += data.len() as i32;
 
-        // TODO: if bounds is within the block cache, flush it and rebuild cache.
+        // TODO: if bounds is within the block cache, append what we can & shift the cache block if needed
 
         Ok(index)
     }

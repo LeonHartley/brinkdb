@@ -8,6 +8,7 @@ pub enum Command {
     Unknown,
     Get(String),
     Set(String, String),
+    Delete(String),
     Metadata,
 }
 
@@ -15,6 +16,7 @@ pub async fn handle_command(store: String, command: Command, ctx: &mut BrinkStor
     match command {
         Command::Get(key) => handle_get(store, key, ctx).await,
         Command::Set(key, value) => handle_set(store, key, value, ctx).await,
+        Command::Delete(key) => handle_delete(store, key, ctx).await,
         Command::Metadata => handle_metadata(store, ctx).await,
         Command::Unknown => {
             println!("unknown command");
@@ -57,5 +59,12 @@ pub async fn handle_set(store: String, key: String, value: String, ctx: &mut Bri
 }
 
 pub async fn handle_metadata(store: String, ctx: &mut BrinkStoreContext) -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+
+pub async fn handle_delete(store: String, key: String, ctx: &mut BrinkStoreContext) -> Result<(), Box<dyn Error>> {
+    ctx.del(store, key).await?;
+
     Ok(())
 }

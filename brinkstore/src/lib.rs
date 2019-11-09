@@ -11,6 +11,7 @@ extern crate tokio;
 extern crate uuid;
 extern crate serde_json;
 extern crate jsonpath;
+extern crate chrono;
 
 #[macro_use]
 extern crate async_trait;

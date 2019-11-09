@@ -49,6 +49,16 @@ impl BrinkStoreContext {
         result
     }
 
+
+    pub async fn del(&mut self, store: String, key: String) -> Result<(), Error> {
+        let watch = Instant::now();
+
+        let mut store = self.stores.get_mut(&store).unwrap();
+        let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
+
+        store.del(key).await
+    }
+
     pub fn add_store(&mut self, store: BrinkStore) {
         self.stores.insert(store.name.clone(), store);
     }

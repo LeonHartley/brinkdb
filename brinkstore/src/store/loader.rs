@@ -8,12 +8,12 @@ impl BrinkStoreLoader {
     pub async fn write(store: &BrinkStore) -> Result<(), Error> {
         let bin = bincode::serialize(store).unwrap();
 
-        write(format!("{}.brinkdb", &store.name), bin).await?;
+        write(format!("data/{}.brinkdb", &store.name), bin).await?;
         Ok(())
     }
 
     pub async fn read(name: String) -> Result<BrinkStore, Error> {
-        let bytes = read(format!("{}.brinkdb", &name)).await?;
+        let bytes = read(format!("data/{}.brinkdb", &name)).await?;
 
         Ok(bincode::deserialize(&bytes[..]).unwrap())
     }

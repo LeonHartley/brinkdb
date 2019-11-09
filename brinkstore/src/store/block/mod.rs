@@ -20,7 +20,7 @@ impl BrinkBlock {
             .append(true)
             .create(true)
             .read(true)
-            .open(format!("block-{}.brinkdb", id)).await?;
+            .open(format!("data/block-{}.brinkdb", id)).await?;
 
         let writer_index = inner.metadata().await?.len() as i32;
         let cache = BrinkBlockCache::new();
@@ -38,11 +38,14 @@ impl BrinkBlock {
         file.inner.write(data.as_slice()).await?;
         file.writer_index += data.len() as i32 - 1;
 
+        // TODO: if bounds is within the block cache, flush it and rebuild cache.
+
         Ok(index)
     }
 
     pub async fn read(&mut self, position: i32, length: u64) -> Result<Vec<u8>, Error> {
         let mut file = self.file.lock().await;
+        // TODO: use block cache
         file.inner.seek(SeekFrom::Start(position as u64)).await?;
 
         let mut contents = vec![0u8; length as usize];

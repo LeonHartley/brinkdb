@@ -3,13 +3,18 @@ use crate::store::BrinkData;
 use serde_json::Value;
 use jsonpath::Selector;
 
+pub mod search;
+
+#[cfg(test)]
+pub mod test;
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkIndex {
     pub key: String,
     pub json_selector: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BrinkIndexValue {
     pub key: String,
     pub value: String,
@@ -17,25 +22,17 @@ pub struct BrinkIndexValue {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkIndexStore {
-    indexes: HashMap<String, BrinkIndex>,
-    values: BTreeMap<String, HashMap<String, BrinkIndexValue>>,
+    pub indexes: HashMap<String, BrinkIndex>,
+    pub values: HashMap<String, BTreeMap<String, Vec<BrinkIndexValue>>>,
 }
 
 impl BrinkIndexStore {
     pub fn new() -> BrinkIndexStore {
-        let mut store = BrinkIndexStore {
-            indexes: HashMap::new(),
-            values: BTreeMap::new(),
-        };
+        BrinkIndexStore { indexes: HashMap::new(), values: HashMap::new() }
+    }
 
-        store.indexes.insert("name".into(), BrinkIndex {
-            key: "name".into(),
-            json_selector: "$.name".into(),
-        });
-
-        store.values.insert("name".into(), HashMap::new());
-
-        store
+    pub fn add(&mut self, index: BrinkIndex) {
+        self.indexes.insert(index.key.clone(), index);
     }
 }
 
@@ -43,6 +40,7 @@ impl BrinkIndex {
     pub fn new(key: String, json_selector: String) -> BrinkIndex {
         BrinkIndex { key, json_selector }
     }
+
     pub fn parse(key: &String, json: String, store: &mut BrinkIndexStore) {
         if let Ok(value) = serde_json::from_str::<Value>(&json) {
             for index in store.indexes.values() {
@@ -51,25 +49,29 @@ impl BrinkIndex {
                     .map(|t| t.as_str().unwrap())
                     .collect();
 
-                let value = match store.values.get_mut(&index.key) {
+                let values = match store.values.get_mut(&index.key) {
                     Some(mut map) => map,
                     None => {
-                        store.values.insert(index.key.clone(), HashMap::new());
+                        store.values.insert(index.key.clone(), BTreeMap::new());
+
                         store.values.get_mut(&index.key).unwrap()
                     }
                 };
 
                 for &m in &matches {
-                    value.insert(key.clone(), BrinkIndexValue {
-                        key: index.key.clone(),
-                        value: m.into(),
-                    });
-                }
-                println!("{:?}, store: {:?}", matches, &store);
+                    let value = m.into();
+                    let index_value = BrinkIndexValue {
+                        key: key.clone(),
+                        value,
+                    };
+
+                    if values.contains_key(&index_value.value) {
+                        values.get_mut(&index_value.value).unwrap().push(index_value);
+                    } else {
+                        values.insert(index_value.value.clone(), vec![index_value]);
+                    }
+                };
             }
-        } else {
-            println!("nope, value: {}", json);
         }
     }
 }
-

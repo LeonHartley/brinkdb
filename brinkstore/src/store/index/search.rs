@@ -33,7 +33,7 @@ impl BrinkIndexSearch {
 
     pub fn search(&self, store: &BrinkIndexStore) -> BrinkIndexSearchResult {
         let watch = Instant::now();
-        let mut results: HashMap<String, i32> = HashMap::new();
+        let mut results: HashMap<&String, i32> = HashMap::new();
         let keys: Vec<String> = self.keys.iter()
             .filter_map(|key| {
                 let index = store.values.get(&key.key);
@@ -55,15 +55,15 @@ impl BrinkIndexSearch {
 
         for key in &keys {
             if let Some(count) = results.get(&key.clone()) {
-                results.insert(key.clone(), count + 1);
+                results.insert(key, count + 1);
             } else {
-                results.insert(key.clone(), 1);
+                results.insert(key, 1);
             }
         }
 
         let v: Vec<String> = results.into_iter().filter_map(|(key, val)| {
             if val as usize == self.keys.len() {
-                Some(key)
+                Some(key.clone())
             } else {
                 None
             }

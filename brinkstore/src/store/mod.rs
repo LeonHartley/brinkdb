@@ -131,6 +131,7 @@ impl BrinkStore {
                 let mut new = latest.clone();
                 new.state = BrinkDataState::Deleted;
                 new.version = new.version + 1;
+                new.timestamp = Utc::now().timestamp();
 
                 entry.put(new);
             }

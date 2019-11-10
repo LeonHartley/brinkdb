@@ -111,7 +111,7 @@ impl BrinkStore {
             None => return Ok(None)
         };
 
-        if version.state != BrinkDataState::Active {
+        if version.state == BrinkDataState::Deleted {
             return Ok(None);
         }
 

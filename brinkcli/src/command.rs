@@ -7,22 +7,28 @@ use serde_json::Value;
 pub enum Command {
     Unknown,
     Get(String),
-    Set(String, String),
+    Set { key: String, value: String },
     Delete(String),
+    IndexGet(String),
+    IndexSet { key: String, selector: String },
+    IndexDelete(String),
     Metadata,
 }
 
 pub async fn handle_command(store: String, command: Command, ctx: &mut BrinkStoreContext) -> Result<(), Box<dyn Error>> {
     match command {
         Command::Get(key) => handle_get(store, key, ctx).await,
-        Command::Set(key, value) => handle_set(store, key, value, ctx).await,
+        Command::Set { key, value } => handle_set(store, key, value, ctx).await,
         Command::Delete(key) => handle_delete(store, key, ctx).await,
         Command::Metadata => handle_metadata(store, ctx).await,
         Command::Unknown => {
             println!("unknown command");
 
             Ok(())
-        }
+        },
+        Command::IndexGet(_) => Ok(()),
+        Command::IndexSet { key: _, selector: _ } => Ok(()),
+        Command::IndexDelete(_) => Ok(()),
     }
 }
 

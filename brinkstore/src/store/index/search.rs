@@ -1,6 +1,7 @@
 use crate::store::index::{BrinkIndexStore, BrinkIndexValue};
 use std::time::Instant;
 use std::error::Error;
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct BrinkIndexSearchKey {
@@ -32,12 +33,16 @@ impl BrinkIndexSearch {
 
     pub fn search(&self, store: &BrinkIndexStore) -> BrinkIndexSearchResult {
         let watch = Instant::now();
-        let values: Vec<BrinkIndexValue> = self.keys.iter()
+        let mut results: HashMap<String, i32> = HashMap::new();
+        let keys: Vec<String> = self.keys.iter()
             .filter_map(|key| {
                 let index = store.values.get(&key.key);
                 if let Some(index) = index {
                     if let Some(keys) = index.get(&key.value) {
-                        Some(keys.clone())
+                        Some(keys
+                            .iter()
+                            .map(|f| f.key.clone())
+                            .collect())
                     } else {
                         None
                     }
@@ -45,10 +50,26 @@ impl BrinkIndexSearch {
                     None
                 }
             })
-            .flat_map(|m| m)
+            .flat_map(|m: Vec<String>| m)
             .collect();
 
-//        println!("search {:?}, taken {} ms", values, watch.elapsed().as_millis());
+        for key in &keys {
+            if let Some(count) = results.get(&key.clone()) {
+                results.insert(key.clone(), count + 1);
+            } else {
+                results.insert(key.clone(), 1);
+            }
+        }
+
+        let v: Vec<String> = results.into_iter().filter_map(|(key, val)| {
+            if val as usize == self.keys.len() {
+                Some(key)
+            } else {
+                None
+            }
+        }).collect();
+
+        println!("search {:?}, taken {} ms", v, watch.elapsed().as_millis());
         BrinkIndexSearchResult::None
     }
 }

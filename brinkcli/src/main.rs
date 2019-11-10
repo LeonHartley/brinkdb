@@ -29,15 +29,36 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .long("store")
                 .index(1)
                 .takes_value(true)
-                .required(true),
-        )
-        .args(&[
+                .required(true))
+        .arg(
             Arg::with_name("server-addr")
                 .help("brinkdb server connection details")
                 .short("a")
                 .long("server-addr")
-                .takes_value(true)
-        ])
+                .takes_value(true))
+        .subcommand(App::new("index")
+            .about("Index util")
+            .subcommand(App::new("get")
+                .about("Gets information for a certain index")
+                .arg(
+                    Arg::with_name("key")
+                        .help("the key to get")
+                        .index(1)
+                        .required(true),
+                ))
+            .subcommand(App::new("set")
+                .about("Sets an index")
+                .arg(
+                    Arg::with_name("key")
+                        .help("the key to get")
+                        .index(1)
+                        .required(true))
+                .arg(
+                    Arg::with_name("selector")
+                        .help("the JSON selector to map index values")
+                        .index(2)
+                        .required(true)
+                )))
         .subcommand(App::new("get")
             .about("Gets a value by key")
             .arg(
@@ -71,7 +92,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .about("Gets metadata for chosen store"))
         .get_matches();
 
-//    println!("{:?}", args);
+    println!("{:?}", &args);
     let store_name: String = args.value_of("store").unwrap().into();
     let (subcommand, subcmd_args) = args.subcommand();
     let args = subcmd_args.unwrap();
@@ -82,7 +103,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .map(|s| s.to_string())
                 .collect();
 
-            Command::Set(args.value_of("key").unwrap().into(), values.join(" "))
+            Command::Set { key: args.value_of("key").unwrap().into(), value: values.join(" ") }
         }
         "get" => Command::Get(args.value_of("key").unwrap().into()),
         "del" => Command::Delete(args.value_of("key").unwrap().into()),
@@ -123,7 +144,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     handle_command(store_name.clone(), command, &mut ctx).await?;
 
-    BrinkStoreLoader::write(ctx.get_store(&store_name).unwrap()).await?;
+    let store = ctx.get_store(&store_name).unwrap();
+    BrinkIndexSearch::new(vec! {
+        BrinkIndexSearchKey::new("name".into(), "Leon".into()),
+        BrinkIndexSearchKey::new("country".into(), "UK".into()),
+    }).search(&store.indexes);
+
+    BrinkStoreLoader::write(store).await?;
 
     Ok(())
 }

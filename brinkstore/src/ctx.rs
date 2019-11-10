@@ -6,6 +6,7 @@ use tokio::io::Error;
 use std::hash::Hasher;
 use std::collections::hash_map::DefaultHasher;
 use std::time::Instant;
+use crate::store::index::BrinkIndex;
 
 pub struct BrinkStoreContext {
     stores: HashMap<String, BrinkStore>,
@@ -49,7 +50,6 @@ impl BrinkStoreContext {
         result
     }
 
-
     pub async fn del(&mut self, store: String, key: String) -> Result<(), Error> {
         let watch = Instant::now();
 
@@ -77,5 +77,16 @@ impl BrinkStoreContext {
 
     pub fn set_default_block(&mut self, block: i32) {
         self.default_block = Some(block)
+    }
+
+    pub fn index_metadata(&self, store: &String) -> Option<Vec<BrinkIndex>> {
+        match self.get_store(store) {
+            Some(store) => Some(store.indexes.indexes
+                .values()
+                .map(|f| f.clone())
+                .collect()),
+
+            None => None
+        }
     }
 }

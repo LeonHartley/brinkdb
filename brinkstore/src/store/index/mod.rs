@@ -9,7 +9,7 @@ pub mod parser;
 #[cfg(test)]
 pub mod test;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BrinkIndex {
     pub key: String,
     pub json_selector: String,
@@ -19,6 +19,7 @@ pub struct BrinkIndex {
 pub struct BrinkIndexValue {
     pub key: String,
     pub value: String,
+    pub version: i32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

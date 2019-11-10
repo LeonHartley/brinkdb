@@ -4,11 +4,11 @@ use jsonpath::Selector;
 use std::collections::BTreeMap;
 
 pub trait BrinkIndexParser {
-    fn parse(key: &String, json: String, store: &mut BrinkIndexStore);
+    fn parse(key: &String, json: String, version: i32, store: &mut BrinkIndexStore);
 }
 
 impl BrinkIndexParser for BrinkIndex {
-    fn parse(key: &String, json: String, store: &mut BrinkIndexStore) {
+    fn parse(key: &String, json: String, version: i32, store: &mut BrinkIndexStore) {
         if let Ok(value) = serde_json::from_str::<Value>(&json) {
             for index in store.indexes.values() {
                 let selector = Selector::new(&index.json_selector).unwrap();
@@ -30,6 +30,7 @@ impl BrinkIndexParser for BrinkIndex {
                     let index_value = BrinkIndexValue {
                         key: key.clone(),
                         value,
+                        version,
                     };
 
                     if values.contains_key(&index_value.value) {

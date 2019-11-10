@@ -44,7 +44,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     Arg::with_name("key")
                         .help("the key to get")
                         .index(1)
-                        .required(true),
                 ))
             .subcommand(App::new("set")
                 .about("Sets an index")
@@ -92,7 +91,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .about("Gets metadata for chosen store"))
         .get_matches();
 
-    println!("{:?}", &args);
+//    println!("{:?}", &args);
     let store_name: String = args.value_of("store").unwrap().into();
     let (subcommand, subcmd_args) = args.subcommand();
     let args = subcmd_args.unwrap();
@@ -107,6 +106,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         "get" => Command::Get(args.value_of("key").unwrap().into()),
         "del" => Command::Delete(args.value_of("key").unwrap().into()),
+        "index" => match args.subcommand() {
+            ("get", args) => Command::IndexGet(args.unwrap().value_of("key")
+                .map_or(None, |s| Some(s.to_string()))),
+            _ => Command::Unknown,
+        },
         "metadata" => Command::Metadata,
         _ => Command::Unknown
     };

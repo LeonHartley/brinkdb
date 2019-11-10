@@ -150,7 +150,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let store = ctx.get_store(&store_name).unwrap();
     BrinkIndexSearch::new(vec! {
-        BrinkIndexSearchKey::new("name".into(), "Leon".into()),
+//        BrinkIndexSearchKey::new("name".into(), "Leon".into()),
         BrinkIndexSearchKey::new("country".into(), "UK".into()),
     }).search(&store.indexes);
 

@@ -81,7 +81,7 @@ impl BrinkStore {
         let index = block.write_value(bytes).await?;
 
         if data.blob.is_json() {
-            BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), &mut self.indexes);
+            BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), data.version, &mut self.indexes);
         }
 
         let state = if data.version == 1 {

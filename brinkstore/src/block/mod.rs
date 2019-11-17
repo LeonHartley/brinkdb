@@ -1,9 +1,7 @@
 use tokio::fs::{File, OpenOptions};
-use tokio::io::{Error, AsyncWriteExt, AsyncReadExt, BufReader};
+use tokio::io::{Error, AsyncWriteExt, AsyncReadExt};
 use tokio::sync::Mutex;
 use std::io::SeekFrom;
-
-const BLOCK_CACHE_SIZE: u64 = 128_000_000;
 
 pub struct BrinkBlockFile {
     pub inner: File,

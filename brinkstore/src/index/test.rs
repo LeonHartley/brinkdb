@@ -1,5 +1,5 @@
-use crate::store::index::search::{BrinkIndexSearchResult, BrinkIndexSearch, BrinkIndexSearchKey};
-use crate::store::index::{BrinkIndexStore, BrinkIndex};
+use crate::index::search::{BrinkIndexSearch, BrinkIndexSearchKey};
+use crate::index::{BrinkIndexStore, BrinkIndex};
 
 #[test]
 pub fn brink_index_search() {

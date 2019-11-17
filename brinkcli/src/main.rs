@@ -1,13 +1,14 @@
 use std::error::Error;
 use std::collections::HashMap;
-use brinkstore::store::index::{BrinkIndexStore, BrinkIndex};
+use brinkstore::index::{BrinkIndexStore, BrinkIndex};
 use brinkstore::ctx::BrinkStoreContext;
-use brinkstore::store::block::BrinkBlock;
-use brinkstore::store::loader::BrinkStoreLoader;
-use brinkstore::store::BrinkStore;
-use brinkstore::store::index::search::{BrinkIndexSearch, BrinkIndexSearchKey};
-use clap::{App, SubCommand, Arg};
-use crate::command::{Command, handle_command};
+use brinkstore::block::BrinkBlock;
+use brinkstore::loader::BrinkStoreLoader;
+use brinkstore::BrinkStore;
+use brinkstore::index::search::{BrinkIndexSearchKey};
+use brinkprotocol::message::Command;
+use clap::{App, Arg};
+use crate::command::handle_command;
 
 extern crate tokio;
 extern crate brinkstore;
@@ -55,6 +56,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .arg(
                     Arg::with_name("selector")
                         .help("the JSON selector to map index values")
+                        .index(2)
+                        .required(true)
+                ))
+            .subcommand(App::new("search")
+                .about("Searches on indexes")
+                .arg(
+                    Arg::with_name("key")
+                        .help("the key to get")
+                        .index(1)
+                        .required(true))
+                .arg(
+                    Arg::with_name("value")
+                        .help("the value to search for")
                         .index(2)
                         .required(true)
                 )))
@@ -109,6 +123,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         "index" => match args.subcommand() {
             ("get", args) => Command::IndexGet(args.unwrap().value_of("key")
                 .map_or(None, |s| Some(s.to_string()))),
+            ("search", args) => {
+                let args = args.unwrap();
+                Command::IndexSearch(vec!(BrinkIndexSearchKey::new(args.value_of("key").unwrap().to_string(),
+                                                                   args.value_of("value").unwrap().to_string())))
+            }
             _ => Command::Unknown,
         },
         "metadata" => Command::Metadata,
@@ -116,7 +135,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let mut ctx = BrinkStoreContext::new();
-    let mut block = BrinkBlock::new(1).await?;
+    let block = BrinkBlock::new(1).await?;
 
     let mut indexes = BrinkIndexStore::new();
     indexes.add(BrinkIndex {
@@ -149,11 +168,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     handle_command(store_name.clone(), command, &mut ctx).await?;
 
     let store = ctx.get_store(&store_name).unwrap();
-    BrinkIndexSearch::new(vec! {
-//        BrinkIndexSearchKey::new("name".into(), "Leon".into()),
-        BrinkIndexSearchKey::new("country".into(), "UK".into()),
-    }).search(&store.indexes);
-
     BrinkStoreLoader::write(store).await?;
 
     Ok(())

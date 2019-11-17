@@ -1,4 +1,4 @@
-use crate::store::index::{BrinkIndexStore, BrinkIndex, BrinkIndexValue};
+use crate::index::{BrinkIndexStore, BrinkIndex, BrinkIndexValue};
 use serde_json::Value;
 use jsonpath::Selector;
 use std::collections::BTreeMap;
@@ -17,7 +17,7 @@ impl BrinkIndexParser for BrinkIndex {
                     .collect();
 
                 let values = match store.values.get_mut(&index.key) {
-                    Some(mut map) => map,
+                    Some(map) => map,
                     None => {
                         store.values.insert(index.key.clone(), BTreeMap::new());
 
@@ -25,7 +25,7 @@ impl BrinkIndexParser for BrinkIndex {
                     }
                 };
 
-                for &m in &matches {
+                for m in matches {
                     let value = m.into();
                     let index_value = BrinkIndexValue {
                         key: key.clone(),

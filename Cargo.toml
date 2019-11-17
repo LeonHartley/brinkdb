@@ -2,5 +2,6 @@
 members = [
     "brinkstore",
     "brinkserver",
-    "brinkcli"
+    "brinkcli",
+    "brinkprotocol",
 ]

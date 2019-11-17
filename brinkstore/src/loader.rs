@@ -1,4 +1,4 @@
-use crate::store::BrinkStore;
+use crate::BrinkStore;
 use tokio::io::Error;
 use tokio::fs::{write, read};
 

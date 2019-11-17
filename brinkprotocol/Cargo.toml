@@ -1,13 +1,9 @@
 [package]
-name = "brinkcli"
+name = "brinkprotocol"
 version = "0.1.0"
 authors = ["Leon Hartley <ljph@outlook.com>"]
 edition = "2018"
 
 [dependencies]
 tokio = "0.2.0-alpha.6"
-clap = "2.33.0"
-serde_json = "1.0"
-
 brinkstore = { path = "../brinkstore"}
-brinkprotocol = { path = "../brinkprotocol"}

@@ -1,12 +1,10 @@
-use std::collections::{HashMap, LinkedList};
-use crate::store::{BrinkStore, BrinkData};
-use crate::store::block::BrinkBlock;
-use std::sync::{RwLock, Arc};
+use std::collections::{HashMap};
+use crate::{BrinkStore, BrinkData};
+use crate::block::BrinkBlock;
+
 use tokio::io::Error;
-use std::hash::Hasher;
-use std::collections::hash_map::DefaultHasher;
 use std::time::Instant;
-use crate::store::index::BrinkIndex;
+use crate::index::BrinkIndex;
 
 pub struct BrinkStoreContext {
     stores: HashMap<String, BrinkStore>,
@@ -24,9 +22,9 @@ impl BrinkStoreContext {
     }
 
     pub async fn put(&mut self, store: String, key: String, value: Vec<u8>) -> Result<(), Error> {
-        let watch = Instant::now();
+        let _watch = Instant::now();
 
-        let mut store = self.stores.get_mut(&store).unwrap();
+        let store = self.stores.get_mut(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         let res = store.put(key, value, &mut default_block).await;
@@ -36,7 +34,7 @@ impl BrinkStoreContext {
     }
 
     pub async fn get(&mut self, store: String, key: String) -> Result<Option<BrinkData>, Error> {
-        let watch = Instant::now();
+        let _watch = Instant::now();
 
         let store = self.stores.get(&store).unwrap();
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
@@ -51,10 +49,10 @@ impl BrinkStoreContext {
     }
 
     pub async fn del(&mut self, store: String, key: String) -> Result<(), Error> {
-        let watch = Instant::now();
+        let _watch = Instant::now();
 
-        let mut store = self.stores.get_mut(&store).unwrap();
-        let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
+        let store = self.stores.get_mut(&store).unwrap();
+        let _default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         store.del(key).await
     }

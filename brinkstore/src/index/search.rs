@@ -1,20 +1,20 @@
-use crate::store::index::{BrinkIndexStore, BrinkIndexValue};
 use std::time::Instant;
-use std::error::Error;
-use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+use std::collections::HashMap;
+use crate::index::{BrinkIndexStore, BrinkIndexValue};
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BrinkIndexSearchKey {
     key: String,
     value: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BrinkIndexSearch {
     keys: Vec<BrinkIndexSearchKey>
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum BrinkIndexSearchResult {
     Ok(Vec<BrinkIndexValue>),
     None,
@@ -54,11 +54,13 @@ impl BrinkIndexSearch {
             .collect();
 
         for key in keys {
-            if let Some(count) = results.get(&key) {
-                results.insert(key, count + 1);
+            let count = if let Some(count) = results.get(&key) {
+                *count + 1
             } else {
-                results.insert(key, 1);
-            }
+                1
+            };
+
+            results.insert(key,count);
         }
 
         let v: Vec<(String, i32)> = results.into_iter().filter_map(|((key, version), val)| {

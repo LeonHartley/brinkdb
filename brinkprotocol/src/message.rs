@@ -1,4 +1,42 @@
 use brinkstore::index::search::BrinkIndexSearchKey;
+use crate::codec::{BrinkEncoder, BrinkDecoder};
+use uuid::Uuid;
+use crate::BrinkData;
+
+#[derive(Debug)]
+pub struct BrinkTxnBeginRequest;
+
+#[derive(Debug)]
+pub struct BrinkTxnCommitRequest {
+    pub txn_id: Uuid
+}
+
+
+#[derive(Debug)]
+pub struct BrinkTxnCommitResponse {
+    pub ok: bool
+}
+
+#[derive(Debug)]
+pub struct BrinkTxnBeginResponse {
+    pub txn_id: Uuid
+}
+
+impl BrinkDecoder for BrinkTxnBeginRequest {
+    fn decode(buffer: Vec<u8>) -> Self {
+        unimplemented!()
+    }
+}
+
+impl BrinkEncoder for BrinkTxnBeginResponse {}
+
+impl BrinkDecoder for BrinkTxnCommitRequest {
+    fn decode(buffer: Vec<u8>) -> Self {
+        unimplemented!()
+    }
+}
+
+impl BrinkEncoder for BrinkTxnCommitResponse {}
 
 #[derive(Debug)]
 pub enum Command {
@@ -13,13 +51,30 @@ pub enum Command {
     Metadata,
 }
 
-pub struct BrinkRequest {
-    txn_id: Option<i64>,
-    command: Command,
+#[derive(Debug)]
+pub enum CommandResult {
+    Value(BrinkData),
+    Ok,
+    None,
+    Error(String),
 }
 
-impl BrinkRequest {
-    pub fn new(txn_id: Option<i64>, command: Command) -> BrinkRequest {
-        BrinkRequest { txn_id, command }
+#[derive(Debug)]
+pub struct BrinkCommandRequest {
+    pub txn_id: Option<Uuid>,
+    pub store: String,
+    pub command: Command,
+}
+
+#[derive(Debug)]
+pub struct BrinkCommandResponse {
+    pub result: CommandResult
+}
+
+impl BrinkDecoder for BrinkCommandRequest {
+    fn decode(buffer: Vec<u8>) -> Self {
+        unimplemented!()
     }
 }
+
+impl BrinkEncoder for BrinkCommandResponse {}

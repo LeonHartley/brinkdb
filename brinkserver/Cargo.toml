@@ -9,12 +9,13 @@ edition = "2018"
 [dependencies]
 bincode = "1.2.0"
 tokio = "0.2.0-alpha.6"
+futures = "0.3.1"
 serde = { version = "1.0", features = ["derive"] }
-uuid = "0.8"
+uuid = { version  = "0.8", features = ["serde", "v4"] }
 async-trait = "0.1.17"
 rust-crypto = "0.2.36"
 jsonpath = "0.1.1"
 serde_json = "1.0"
 chrono = "0.4"
-brinkstore = { path = "../brinkstore" }
+async-std = "1.0.1"
 brinkprotocol = { path = "../brinkprotocol" }

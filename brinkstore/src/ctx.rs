@@ -1,10 +1,10 @@
 use std::collections::{HashMap};
 use crate::{BrinkStore, BrinkData};
-use crate::block::BrinkBlock;
 
 use tokio::io::Error;
 use std::time::Instant;
 use crate::index::BrinkIndex;
+use crate::block::BrinkBlock;
 
 pub struct BrinkStoreContext {
     stores: HashMap<String, BrinkStore>,

@@ -1,7 +1,7 @@
 use chrono::Utc;
 
-pub mod session;
 pub mod ctx;
+pub mod event;
 
 const BRINK_DEFAULT_PORT: i16 = 7880;
 const BRINK_DEFAULT_HOST: &str = "localhost";

@@ -1,11 +1,10 @@
-use crate::store::index::search::{BrinkIndexSearchResult, BrinkIndexSearch, BrinkIndexSearchKey};
-use crate::store::index::{BrinkIndexStore, BrinkIndex};
+use crate::store::index::search::{BrinkIndexSearch, BrinkIndexSearchKey, BrinkIndexSearchResult};
+use crate::store::index::{BrinkIndex, BrinkIndexStore};
 
 #[test]
 pub fn brink_index_search() {
-    let search = BrinkIndexSearch::new(vec! {
-        BrinkIndexSearchKey::new("name".into(), "Leon".into())
-    });
+    let search =
+        BrinkIndexSearch::new(vec![BrinkIndexSearchKey::new("name".into(), "Leon".into())]);
 
     let mut store = BrinkIndexStore::new();
     store.add(BrinkIndex {

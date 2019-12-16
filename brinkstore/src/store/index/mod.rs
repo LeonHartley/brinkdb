@@ -1,10 +1,10 @@
-use std::collections::{HashMap, BTreeMap};
 use crate::store::BrinkData;
-use serde_json::Value;
 use jsonpath::Selector;
+use serde_json::Value;
+use std::collections::{BTreeMap, HashMap};
 
-pub mod search;
 pub mod parser;
+pub mod search;
 
 #[cfg(test)]
 pub mod test;
@@ -29,7 +29,12 @@ pub struct BrinkIndexStore {
 }
 
 impl BrinkIndexStore {
-    pub fn new() -> BrinkIndexStore { BrinkIndexStore { indexes: HashMap::new(), values: HashMap::new() } }
+    pub fn new() -> BrinkIndexStore {
+        BrinkIndexStore {
+            indexes: HashMap::new(),
+            values: HashMap::new(),
+        }
+    }
 
     pub fn add(&mut self, index: BrinkIndex) {
         self.indexes.insert(index.key.clone(), index);

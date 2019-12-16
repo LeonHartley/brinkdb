@@ -1,7 +1,7 @@
-use tokio::fs::{File, OpenOptions};
-use tokio::io::{Error, AsyncWriteExt, AsyncReadExt, BufReader};
-use tokio::sync::Mutex;
 use std::io::SeekFrom;
+use tokio::fs::{File, OpenOptions};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, Error};
+use tokio::sync::Mutex;
 
 const BLOCK_CACHE_SIZE: u64 = 128_000_000;
 
@@ -22,14 +22,19 @@ impl BrinkBlock {
             .append(true)
             .create(true)
             .read(true)
-            .open(format!("data/block-{}.brinkstore", id)).await?;
+            .open(format!("data/block-{}.brinkstore", id))
+            .await?;
 
         let writer_index = inner.metadata().await?.len() as i32;
         let cache = BrinkBlockCache::new();
 
         Ok(BrinkBlock {
             id,
-            file: Mutex::new(BrinkBlockFile { inner, writer_index, cache }),
+            file: Mutex::new(BrinkBlockFile {
+                inner,
+                writer_index,
+                cache,
+            }),
         })
     }
 
@@ -48,7 +53,7 @@ impl BrinkBlock {
     pub async fn read(&mut self, position: i32, length: u64) -> Result<Vec<u8>, Error> {
         let mut file = self.file.lock().await;
 
-//        println!("current writer index, {}, reading from {} to {}", file.writer_index, position, length);
+        //        println!("current writer index, {}, reading from {} to {}", file.writer_index, position, length);
 
         // TODO: use block cache
         file.inner.seek(SeekFrom::Start(position as u64)).await?;

@@ -1,12 +1,12 @@
-use std::collections::{HashMap, LinkedList};
-use crate::store::{BrinkStore, BrinkData};
 use crate::store::block::BrinkBlock;
-use std::sync::{RwLock, Arc};
-use tokio::io::Error;
-use std::hash::Hasher;
-use std::collections::hash_map::DefaultHasher;
-use std::time::Instant;
 use crate::store::index::BrinkIndex;
+use crate::store::{BrinkData, BrinkStore};
+use std::collections::hash_map::DefaultHasher;
+use std::collections::{HashMap, LinkedList};
+use std::hash::Hasher;
+use std::sync::{Arc, RwLock};
+use std::time::Instant;
+use tokio::io::Error;
 
 pub struct BrinkStoreContext {
     stores: HashMap<String, BrinkStore>,
@@ -30,7 +30,7 @@ impl BrinkStoreContext {
         let mut default_block = self.blocks.get_mut(&self.default_block.unwrap()).unwrap();
 
         let res = store.put(key, value, &mut default_block).await;
-//        println!("set value took {} ms", watch.elapsed().as_millis());
+        //        println!("set value took {} ms", watch.elapsed().as_millis());
 
         res
     }
@@ -43,10 +43,10 @@ impl BrinkStoreContext {
 
         let result = match store.get(key, &mut default_block).await? {
             Some(data) => Ok(Some(data)),
-            None => Ok(None)
+            None => Ok(None),
         };
 
-//        println!("get value took {} ms", watch.elapsed().as_millis());
+        //        println!("get value took {} ms", watch.elapsed().as_millis());
         result
     }
 
@@ -81,12 +81,9 @@ impl BrinkStoreContext {
 
     pub fn index_metadata(&self, store: &String) -> Option<Vec<BrinkIndex>> {
         match self.get_store(store) {
-            Some(store) => Some(store.indexes.indexes
-                .values()
-                .map(|f| f.clone())
-                .collect()),
+            Some(store) => Some(store.indexes.indexes.values().map(|f| f.clone()).collect()),
 
-            None => None
+            None => None,
         }
     }
 }

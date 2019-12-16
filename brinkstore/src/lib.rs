@@ -7,11 +7,11 @@ pub mod test;
 #[macro_use]
 extern crate serde;
 extern crate bincode;
+extern crate chrono;
+extern crate jsonpath;
+extern crate serde_json;
 extern crate tokio;
 extern crate uuid;
-extern crate serde_json;
-extern crate jsonpath;
-extern crate chrono;
 
 #[macro_use]
 extern crate async_trait;

@@ -1,6 +1,6 @@
 use crate::store::BrinkStore;
+use tokio::fs::{read, write};
 use tokio::io::Error;
-use tokio::fs::{write, read};
 
 pub struct BrinkStoreLoader;
 
@@ -18,5 +18,3 @@ impl BrinkStoreLoader {
         Ok(bincode::deserialize(&bytes[..]).unwrap())
     }
 }
-
-

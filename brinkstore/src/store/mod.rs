@@ -1,20 +1,20 @@
-use std::collections::{HashMap, LinkedList};
-use serde::{Serialize, Deserialize};
-use tokio::fs::{read, write};
-use tokio::io::Error;
 use crate::store::block::BrinkBlock;
+use crate::store::index::parser::BrinkIndexParser;
+use crate::store::index::{BrinkIndex, BrinkIndexStore};
+use crate::store::util::IsJson;
+use chrono::prelude::*;
+use crypto::digest::Digest;
+use crypto::sha1::Sha1;
+use serde::{Deserialize, Serialize};
 use std::borrow::BorrowMut;
 use std::collections::hash_map::DefaultHasher;
-use crypto::sha1::Sha1;
-use crypto::digest::Digest;
-use crate::store::index::{BrinkIndexStore, BrinkIndex};
-use crate::store::util::IsJson;
-use crate::store::index::parser::BrinkIndexParser;
-use chrono::prelude::*;
+use std::collections::{HashMap, LinkedList};
+use tokio::fs::{read, write};
+use tokio::io::Error;
 
 pub mod block;
-pub mod loader;
 pub mod index;
+pub mod loader;
 pub mod util;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -54,7 +54,12 @@ pub struct BrinkData {
 }
 
 impl BrinkStore {
-    pub async fn put(&mut self, key: String, value: Vec<u8>, block: &mut BrinkBlock) -> Result<(), Error> {
+    pub async fn put(
+        &mut self,
+        key: String,
+        value: Vec<u8>,
+        block: &mut BrinkBlock,
+    ) -> Result<(), Error> {
         if let Some(data) = self.get(key.clone(), block).await? {
             if data.blob == value {
                 return Ok(());
@@ -73,7 +78,7 @@ impl BrinkStore {
 
         data.version = match entry.latest_version() {
             Some(latest) => latest.version + 1,
-            None => data.version
+            None => data.version,
         };
 
         let bytes = bincode::serialize(&data).unwrap();
@@ -81,7 +86,12 @@ impl BrinkStore {
         let index = block.write_value(bytes).await?;
 
         if data.blob.is_json() {
-            BrinkIndex::parse(&key, String::from_utf8(data.blob.clone()).unwrap(), data.version, &mut self.indexes);
+            BrinkIndex::parse(
+                &key,
+                String::from_utf8(data.blob.clone()).unwrap(),
+                data.version,
+                &mut self.indexes,
+            );
         }
 
         let state = if data.version == 1 {
@@ -102,13 +112,17 @@ impl BrinkStore {
         Ok(())
     }
 
-    pub async fn get(&self, key: String, block: &mut BrinkBlock) -> Result<Option<BrinkData>, Error> {
+    pub async fn get(
+        &self,
+        key: String,
+        block: &mut BrinkBlock,
+    ) -> Result<Option<BrinkData>, Error> {
         let version = match self.keys.get(&key) {
             Some(e) => match e.latest_version() {
                 Some(v) => v,
-                None => return Ok(None)
+                None => return Ok(None),
             },
-            None => return Ok(None)
+            None => return Ok(None),
         };
 
         if version.state == BrinkDataState::Deleted {
